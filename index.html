@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Morning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#111118;color:#F0EDE6;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+
+/* ═══ SLIDES ═══ */
+.slide{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .6s ease}
+.slide.active{opacity:1;pointer-events:auto}
+.slide.active .slide-icon{animation:fadeUp .5s ease both}
+.slide.active .slide-time{animation:fadeUp .5s ease .1s both}
+.slide.active .slide-text{animation:fadeUp .5s ease .2s both}
+.slide.active .slide-sub{animation:fadeUp .5s ease .3s both}
+
+/* title slide */
+.slide-title h1{font-family:'Fraunces',serif;font-size:42px;font-weight:800;line-height:1.1;margin-bottom:24px}
+.slide-title h1 span{color:#8A8780}
+.tap-hint{font-size:13px;color:#8A8780;letter-spacing:1px;text-transform:uppercase;font-weight:600;animation:pulse 2s ease-in-out infinite}
+
+/* entry slides */
+.slide-icon{margin-bottom:20px}
+.slide-icon svg{width:48px;height:48px}
+.slide-time{font-size:14px;font-weight:700;color:#8A8780;letter-spacing:1px;margin-bottom:8px}
+.slide-text{font-family:'Fraunces',serif;font-size:28px;font-weight:600;line-height:1.4;max-width:500px}
+
+/* bridge slide */
+.slide.bridge .slide-text{font-family:'Inter',sans-serif;font-size:18px;font-weight:500;color:#8A8780;line-height:1.7;max-width:460px}
+
+/* final slide */
+.slide.final .slide-text{font-family:'Fraunces',serif;font-size:36px;font-weight:800;color:#F56042;line-height:1.25;max-width:500px}
+.slide.final.active .slide-text{animation:glowIn 1.2s ease .2s both}
+
+/* closing slide */
+.slide.closing .closing-line{width:40px;height:2px;background:#F56042;margin:0 auto 28px;border-radius:1px}
+.slide.closing .highlight{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:#F0EDE6;line-height:1.5;max-width:440px;margin-bottom:20px}
+.slide.closing .sub{font-size:15px;line-height:1.8;color:#8A8780;max-width:400px}
+
+/* progress dots */
+.progress{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(240,237,230,.12);transition:all .3s}
+.dot.done{background:rgba(240,237,230,.35)}
+.dot.now{background:#F56042;transform:scale(1.3)}
+
+/* ═══ PORTRAIT LOCK ═══ */
+.rotate-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#111118;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;color:#F0EDE6}
+.rotate-overlay .rotate-icon{font-size:48px;margin-bottom:20px;animation:rotateHint 2s ease-in-out infinite}
+.rotate-overlay h2{font-family:'Fraunces',serif;font-size:22px;font-weight:800;margin-bottom:10px}
+.rotate-overlay p{font-size:14px;color:#8A8780;line-height:1.6;max-width:280px}
+@media(orientation:portrait) and (max-width:900px){
+  .rotate-overlay{display:flex}
+}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes glowIn{0%{opacity:0;text-shadow:0 0 0 transparent}50%{opacity:1;text-shadow:0 0 30px rgba(245,96,66,.35)}100%{opacity:1;text-shadow:0 0 0 transparent}}
+@keyframes rotateHint{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-90deg)}75%{transform:rotate(-90deg)}}
+
+@media(max-height:500px){
+  .slide-title h1{font-size:32px}
+  .slide-text{font-size:22px}
+  .slide.final .slide-text{font-size:28px}
+  .slide.closing .highlight{font-size:17px}
+  .slide-icon svg{width:36px;height:36px}
+}
+</style>
+</head>
+<body>
+
+<div class="rotate-overlay">
+  <div class="rotate-icon">&#x1F4F1;</div>
+  <h2>Rotate Your Phone</h2>
+  <p>This experience works best in landscape mode. Please turn your phone sideways.</p>
+</div>
+
+<div id="slides"></div>
+<div class="progress" id="progress"></div>
+
+<script>
+var icons = {
+  alarm: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="18" r="10"/><line x1="16" y1="18" x2="16" y2="13"/><line x1="16" y1="18" x2="20" y2="18"/><line x1="8" y1="6" x2="12" y2="9"/><line x1="24" y1="6" x2="20" y2="9"/><line x1="4" y1="4" x2="9" y2="8"/><line x1="28" y1="4" x2="23" y2="8"/></svg>',
+  snooze: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="18" r="10" opacity=".4"/><line x1="16" y1="18" x2="16" y2="13" opacity=".4"/><line x1="16" y1="18" x2="20" y2="18" opacity=".4"/><text x="20" y="10" font-size="8" font-weight="700" fill="#F0EDE6" stroke="none" font-family="sans-serif">z</text><text x="24" y="6" font-size="6" font-weight="700" fill="#F0EDE6" stroke="none" font-family="sans-serif" opacity=".6">z</text></svg>',
+  plate: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="16" cy="20" rx="12" ry="6"/><line x1="4" y1="20" x2="4" y2="18"/><line x1="28" y1="20" x2="28" y2="18"/><path d="M10 16 Q12 12 14 16" opacity=".4"/><path d="M15 14 Q17 10 19 14" opacity=".4"/></svg>',
+  headphones: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 C6 10 10 5 16 5 C22 5 26 10 26 18"/><rect x="4" y="18" width="5" height="8" rx="2"/><rect x="23" y="18" width="5" height="8" rx="2"/></svg>',
+  speech1: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="26" height="16" rx="8"/><path d="M10 20 L8 27 L16 20"/><line x1="10" y1="10" x2="14" y2="10" opacity=".5"/><line x1="16" y1="10" x2="22" y2="10" opacity=".5"/><line x1="10" y1="14" x2="18" y2="14" opacity=".3"/></svg>',
+  speech2: '<svg viewBox="0 0 32 32" fill="none" stroke="#F0EDE6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="26" height="16" rx="8"/><path d="M22 20 L24 27 L16 20"/><line x1="10" y1="10" x2="14" y2="10" opacity=".5"/><line x1="16" y1="10" x2="22" y2="10" opacity=".5"/><line x1="10" y1="14" x2="18" y2="14" opacity=".3"/></svg>'
+};
+
+var slides = [
+  {type:"title"},
+  {time:"5:45", text:"alarm. Snooze.", icon:"alarm"},
+  {time:"5:52", text:"again.", icon:"snooze"},
+  {time:"6:20", text:"no breakfast.", icon:"plate"},
+  {time:"6:45", text:"bus. Earphones in.", icon:"headphones"},
+  {time:"7:30", text:"\"How are you?\" \"I'm fine.\"", icon:"speech1"},
+  {time:"8:15", text:"\"You good?\" \"I'm fine.\"", icon:"speech2"},
+  {type:"bridge", text:"You've been awake for less than three hours. You've said \"I'm fine\" twice."},
+  {type:"final", text:"You haven't meant it once."},
+  {type:"closing"}
+];
+
+// build slides
+var container = document.getElementById("slides");
+var progressEl = document.getElementById("progress");
+var html = "";
+var dots = "";
+
+slides.forEach(function(s, i) {
+  if (s.type === "title") {
+    html += '<div class="slide slide-title' + (i === 0 ? " active" : "") + '" id="s' + i + '">'
+      + '<h1>Your morning<span>...</span></h1>'
+      + '<div class="tap-hint">Tap anywhere to begin</div></div>';
+  } else if (s.type === "bridge") {
+    html += '<div class="slide bridge" id="s' + i + '">'
+      + '<div class="slide-text">' + s.text + '</div></div>';
+  } else if (s.type === "final") {
+    html += '<div class="slide final" id="s' + i + '">'
+      + '<div class="slide-text">' + s.text + '</div></div>';
+  } else if (s.type === "closing") {
+    html += '<div class="slide closing" id="s' + i + '">'
+      + '<div class="closing-line"></div>'
+      + '<p class="highlight">Wellness isn\'t always dramatic. Sometimes it\'s the quiet moments no one sees.</p>'
+      + '<p class="sub">The things you carry before 8am matter. Checking in with yourself isn\'t a big event \u2014 it starts with noticing.</p></div>';
+  } else {
+    html += '<div class="slide" id="s' + i + '">'
+      + '<div class="slide-icon">' + (s.icon ? icons[s.icon] : '') + '</div>'
+      + '<div class="slide-time">' + s.time + '</div>'
+      + '<div class="slide-text">' + s.text + '</div></div>';
+  }
+  dots += '<div class="dot' + (i === 0 ? ' now' : '') + '" id="d' + i + '"></div>';
+});
+
+container.innerHTML = html;
+progressEl.innerHTML = dots;
+
+var current = 0;
+var done = false;
+
+function next() {
+  if (done) return;
+  if (current >= slides.length - 1) { done = true; return; }
+
+  // fade out current
+  var cur = document.getElementById("s" + current);
+  if (cur) cur.classList.remove("active");
+  var curDot = document.getElementById("d" + current);
+  if (curDot) { curDot.classList.remove("now"); curDot.classList.add("done"); }
+
+  current++;
+
+  // fade in next
+  var nxt = document.getElementById("s" + current);
+  if (nxt) nxt.classList.add("active");
+  var nxtDot = document.getElementById("d" + current);
+  if (nxtDot) nxtDot.classList.add("now");
+}
+
+document.body.addEventListener("click", function() { next(); });
+document.body.addEventListener("keydown", function(e) {
+  if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { e.preventDefault(); next(); }
+});
+</script>
+</body>
+</html>
