@@ -62,7 +62,7 @@ body{font-family:'Inter',sans-serif;background:#111118;color:#F0EDE6;min-height:
 }
 
 /* ═══ TAP HINT ═══ */
-.tap-nudge{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,237,230,.35);animation:tapPulse 2.5s ease-in-out infinite;pointer-events:none;z-index:5;transition:opacity .4s}
+.tap-nudge{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,237,230,.35);animation:tapPulse 2.5s ease-in-out infinite;pointer-events:none;z-index:5;transition:opacity .4s}
 .tap-nudge.hidden{opacity:0}
 @keyframes tapPulse{0%,100%{opacity:.2}50%{opacity:.5}}
 
@@ -177,9 +177,9 @@ function next() {
   var nxtDot = document.getElementById("d" + current);
   if (nxtDot) nxtDot.classList.add("now");
 
-  // hide tap nudge on closing slide
+  // hide tap nudge on closing and final slides
   var nudge = document.getElementById("tapNudge");
-  if (current >= slides.length - 1) nudge.classList.add("hidden");
+  if (current >= slides.length - 2) nudge.classList.add("hidden");
 }
 
 document.body.addEventListener("click", function() { next(); });
